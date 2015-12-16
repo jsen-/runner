@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>runner</title>
+<style type="text/css">
+html, body {
+    height: 100%;
+    padding: 0;
+    margin: 0;
+}
+body {
+    display: flex;
+    flex-direction: column;
+}
+div {
+    flex: 1;
+    overflow: scroll;
+    font-family: monospace;
+}
+</style>>
+</head>
+<body>
+<script type="text/javascript">
+~function() {
+    'use strict';
+    function getErrorDiv() {
+        var div = document.querySelector('#err');
+        if(!div) {
+            div = document.createElement('div');
+            div.className = 'err';
+            document.body.appendChild(div);
+        }
+        return div;
+    }
+
+    function showError(err) {
+        var errDiv = getErrorDiv();
+        errDiv.innerHTML = '<pre></pre>'
+        errDiv.children[0].innerHTML = err + '' + err.stack.join('\n');
+    }
+
+    var A2H = require('ansi-to-html');
+    var a2h = new A2H();
+    var divs = [];
+
+    const ipc = require('electron').ipcRenderer;
+    ipc.on('data', function(event, index, data) {
+        console.log(arguments);
+        var div = divs[index];
+        if(div === undefined) {
+            divs[index] = div = document.createElement('div');
+            document.body.appendChild(div);
+        }
+        div.innerHTML += a2h.toHtml(data.toString('utf8').replace(/\n/g, '<br>'));
+        div.scrollTop = div.scrollHeight;
+    });
+    ipc.send('init');
+}();
+</script>
+</body>
+</html>
